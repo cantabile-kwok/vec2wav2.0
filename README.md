@@ -1,7 +1,7 @@
 # vec2wav 2.0: Advancing Voice Conversion via Discrete Token Vocoders
 
 [![paper](https://img.shields.io/badge/paper-arxiv:2409.01995-red)](https://arxiv.org/abs/2409.01995)
-[![docker](https://img.shields.io/badge/Docker-blue)](https://arxiv.org/abs/2409.01995)
+![docker](https://img.shields.io/badge/Docker-blue)
 
 > [!IMPORTANT] 
 > Code and pretrained models will be released in near future. Stay tuned!
