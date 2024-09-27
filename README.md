@@ -1,6 +1,7 @@
 # vec2wav 2.0: Advancing Voice Conversion via Discrete Token Vocoders
 
 [![paper](https://img.shields.io/badge/paper-arxiv:2409.01995-red)](https://arxiv.org/abs/2409.01995)
+[![demo](https://img.shields.io/badge/demo-page-green)](https://cantabile-kwok.github.io/vec2wav2/)
 ![docker](https://img.shields.io/badge/Docker-blue)
 
 > [!IMPORTANT] 
