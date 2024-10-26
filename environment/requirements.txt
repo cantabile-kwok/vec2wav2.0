@@ -1,0 +1,28 @@
+auraloss==0.4.0
+cython==3.0.10
+einops
+debugpy==1.8.0
+fairseq==0.12.2
+filelock~=3.12.2
+h5py
+kaldiio~=2.18.0
+librosa==0.8.1
+matplotlib~=3.4.3
+nltk==3.8.1
+numpy
+pathlib~=1.0.1
+pyyaml~=6.0
+scikit-learn
+scipy~=1.7.1
+setuptools==65.6.3
+six==1.16.0
+soundfile~=0.10.3.post1
+sox
+tensorboard
+tensorboardx~=2.5.1
+torch==1.13.1
+torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116 
+# if the is network error: 
+#     download to local file and pip install torchaudio-0.13.1+cu116-cp310-cp310-linux_x86_64.whl
+tqdm~=4.62.3
+transformers==4.42.3
