@@ -15,7 +15,7 @@ Please refere to `environment` directory for a `requirements.txt` and `Dockerfil
 ## Inference of Voice Conversion
 We provide a simple VC interface.
 
-First, please make sure some SSL models are downloaded in the `pretrained/` directory:
+First, please make sure some required models are downloaded in the `pretrained/` directory:
 
 1. vq-wav2vec model from [this url](https://dl.fbaipublicfiles.com/fairseq/wav2vec/vq-wav2vec_kmeans.pt)
 2. WavLM-Large from [this url](https://github.com/microsoft/unilm/blob/master/wavlm/README.md)
@@ -36,7 +36,7 @@ source path.sh
 vc.py -s $source_wav -t $speaker_prompt -o $output_wav
 ```
 where `$source_wav, $speaker_prompt` should both be mono-channel audio and preferably `.wav` files.
-This script by default tries to load `pretrained/generator.ckpt` and the corresponding `config.yml`. You can rovide `--expdir` to change this path.
+This script by default tries to load `pretrained/generator.ckpt` and the corresponding `config.yml`. You can provide `--expdir` to change this path.
 
 ## Training
 TO BE DONE.
