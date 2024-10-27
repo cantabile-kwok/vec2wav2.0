@@ -44,7 +44,7 @@ generator_params:
     out_channels: 1                       # Number of output channels.
     channels: 512                         # Number of initial channels.
     kernel_size: 7                        # Kernel size of initial and final conv layers.
-    upsample_scales: [8, 5, 3, 2]        # Upsampling scales. The product of these scales must be equal to the hop size
+    upsample_scales: [8, 5, 3, 2]         # Upsampling scales. The product of these scales must be equal to the hop size
     upsample_kernel_sizes: [16, 10, 6, 4] # Kernel size for upsampling layers. Should be 2 times the upsample scales
     resblock: "1"
     resblock_kernel_sizes: [3, 7, 11]     # Kernel size for residual blocks.

@@ -10,4 +10,3 @@ RUN apt-get install -y sox zip
 WORKDIR /app/
 COPY ./ /app/
 RUN pip install -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-

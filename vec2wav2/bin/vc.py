@@ -4,7 +4,7 @@
 import vec2wav2
 from vec2wav2.ssl_models.vqw2v_extractor import Extractor as VQW2VExtractor
 from vec2wav2.ssl_models.wavlm_extractor import Extractor as WavLMExtractor
-from vec2wav2.ssl_models.w2v2_extractor import Extractor as W2V2Extractor
+# from vec2wav2.ssl_models.w2v2_extractor import Extractor as W2V2Extractor
 import torch
 import logging
 import argparse
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         # load VC model
         with open(f"{args.expdir}/config.yml") as f:
             config = yaml.load(f, Loader=yaml.Loader)
-        checkpoint = f"{args.expdir}/generator.ckpt"  # TODO: need think
+        checkpoint = f"{args.expdir}/generator.ckpt"
         model = load_model(checkpoint, config)
         script_logger.info(f"Successfully set up VC model from {checkpoint}")
         model.backend.remove_weight_norm()
@@ -106,6 +106,5 @@ if __name__ == "__main__":
         converted = model.inference(vqvec, prompt)[-1].view(-1)
 
         # save output wav
-        sf.write(args.output, converted.cpu().numpy(), config['sampling_rate'])  # TODO: check sampling_rate key 
+        sf.write(args.output, converted.cpu().numpy(), config['sampling_rate'])
         script_logger.info(f"Saved audio file to {args.output}")
-        

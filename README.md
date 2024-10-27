@@ -56,6 +56,12 @@ TO BE DONE.
 <!-- The vec2wav family are speech token vocoders that are important modules in speech generation based on discrete tokens (esp. semantic tokens!). -->
 
 * [[paper]](https://arxiv.org/abs/2204.00768) **vec2wav** in VQTTS. Single-speaker.
-* [[paper]](https://ojs.aaai.org/index.php/AAAI/article/view/29747)[[code]](https://github.com/X-LANCE/UniCATS-CTX-vec2wav) **CTX-vec2wav** in UniCATS. Multi-speaker with acoustic prompts.
+* [[paper]](https://ojs.aaai.org/index.php/AAAI/article/view/29747)[[code]](https://github.com/X-LANCE/UniCATS-CTX-vec2wav) **CTX-vec2wav** in UniCATS. Multi-speaker with acoustic prompts. Lots of code borrowed from there.
 * 🌟(This) **vec2wav 2.0**. Enhanced in timbre controllability, best for VC!
 
+## Acknowledgements
+
+* [kan-bayashi/ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN) for the whole project structure.
+* [NVIDIA/BigVGAN](https://github.com/NVIDIA/BigVGAN) for the vocoder backbone.
+* [Kaldi](https://github.com/kaldi-asr/kaldi) and [ESPnet](https://github.com/espnet/espnet) for providing useful tools and Conformer implementation.
+* [fairseq](https://github.com/facebookresearch/fairseq) for some network architectures.
