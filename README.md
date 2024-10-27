@@ -38,6 +38,22 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav
 where `$source_wav, $speaker_prompt` should both be mono-channel audio and preferably `.wav` files.
 This script by default tries to load `pretrained/generator.ckpt` and the corresponding `config.yml`. You can provide `--expdir` to change this path.
 
+### Web Interface
+
+We also provide a web interface using Gradio. To launch it:
+
+```
+python vec2wav2/bin/gradio_app.py
+```
+
+This will start a local web server and open the interface in your browser. You can:
+1. Upload source audio (the voice you want to convert)
+2. Upload target speaker audio (the voice you want to convert to)
+3. Click "Convert Voice" to perform the conversion
+4. Listen to or download the converted audio
+
+The web interface uses the same models and settings as the command-line tool.
+
 ## Training
 TO BE DONE.
 
