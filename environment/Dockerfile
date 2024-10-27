@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 
 ENV TZ=Asia/Shanghai
+ENV DEBIAN_FRONTEND=noninteractive
 
 COPY ./requirements.txt /tmp/requirements.txt
 
