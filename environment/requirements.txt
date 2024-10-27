@@ -1,3 +1,6 @@
+torch==1.13.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116
+torchvision==0.14.1+cu116 --extra-index-url https://download.pytorch.org/whl/cu116
+torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
 auraloss==0.4.0
 cython==3.0.10
 einops
@@ -20,9 +23,5 @@ soundfile~=0.10.3.post1
 sox
 tensorboard
 tensorboardx~=2.5.1
-# torch==1.13.1
-# torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116 
-# if the is network error: 
-#     download to local file and pip install torchaudio-0.13.1+cu116-cp310-cp310-linux_x86_64.whl
 tqdm~=4.62.3
 transformers==4.42.3
