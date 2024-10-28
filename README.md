@@ -10,10 +10,12 @@
 
 ## Environment
 
-Please refere to `environment` directory for a `requirements.txt` and `Dockerfile`.
+Please refer to `environment` directory for a `requirements.txt` and `Dockerfile`.
 
-In addition, for convenience, we also provide a Docker image for the Linux version, so you can easily run the Docker container:
+In addition, for convenience, we also provide a Docker image for Linux, so you can easily run the Docker container:
+
 ```sh
+docker pull cantabilekwok511/vec2wav2.0:v0.2
 docker run -it -v /path/to/vec2wav2.0:/workspace cantabilekwok511/vec2wav2.0:v0.2
 ```
 
