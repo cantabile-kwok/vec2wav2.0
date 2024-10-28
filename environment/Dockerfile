@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-devel
+FROM nvidia/cuda:11.6.1-cudnn8-runtime-ubuntu20.04
 
 COPY ./requirements.txt /tmp/requirements.txt
 
