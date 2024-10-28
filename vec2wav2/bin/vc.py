@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright 2024 Yiwei Guo
+
+""" Run VC inference with trained model """
 
 import vec2wav2
 from vec2wav2.ssl_models.vqw2v_extractor import Extractor as VQW2VExtractor

@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+# Copyright 2024 Yiwei Guo
+#  Derived mostly from fairseq (https://github.com/facebookresearch/fairseq)
+
+"""Prompt Pre-net Modules."""
+
 import math
 
 import torch.nn as nn

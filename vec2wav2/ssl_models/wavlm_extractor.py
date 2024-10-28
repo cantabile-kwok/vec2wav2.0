@@ -28,6 +28,7 @@ class Extractor:
 
     def extract_batch(self, wav_list, frame_lens):
         # suppose wav is already a tensor padded with 0
+        # should be careful with LayerNorm since it may cause difference between batch vs single modes.
         pad_mask = make_pad_mask(frame_lens).to(self.device)
         with torch.no_grad():
             wav_input_16khz = [torch.from_numpy(wav).float().to(self.device) for wav in wav_list]
@@ -46,21 +47,8 @@ def calc_out_len(in_len, k, s):
 
 
 if __name__ == '__main__':
+    # run some tests.
     wav_path_list = [
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000003_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000004_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
         "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
         "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000008_000004.wav"
     ]*10
@@ -79,19 +67,11 @@ if __name__ == '__main__':
         out_lens.append(x)
     print("wav lens:", wav_lens)
     print('calculated output lens:', out_lens)
-    # wav_tensor = torch.zeros(size=(len(wav_path_list), max(wav_lens)))
-    # for i, wav in enumerate(wav_list):
-    #     wav_tensor[i, :len(wav)] = torch.from_numpy(wav).float()
-    # print(wav_tensor)
     print('begins batch mode')
     extractor = Extractor(checkpoint="pretrained/WavLM-Large.pt")
     s = time.time()
     feat = extractor.extract_batch(wav_list, out_lens)
     t = time.time()
-    # feat = extractor.extract(audio)
-    # print(feat.shape)
-    # for i in range(len(feat)):
-    #     print(feat[i, :out_lens[i]])
     print('batch mode cost', t-s, 's')
 
     print('begins single mode')
@@ -99,7 +79,6 @@ if __name__ == '__main__':
     s = time.time()
     for wav in wav_list:
         feat = extractor.extract(wav)
-        # print(feat)
     t = time.time()
     print('single mode cost', t-s, 's')
 

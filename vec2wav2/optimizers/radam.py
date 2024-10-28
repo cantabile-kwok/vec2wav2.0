@@ -2,7 +2,7 @@
 
 """RAdam optimizer.
 
-This code is drived from https://github.com/LiyuanLucasLiu/RAdam.
+This code is derived from https://github.com/LiyuanLucasLiu/RAdam.
 """
 
 import math
