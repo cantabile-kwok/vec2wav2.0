@@ -1,5 +1,3 @@
-torch==1.13.1+cu116
-torchvision==0.14.1+cu116
 torchaudio==0.13.1 
 auraloss==0.4.0
 cython==3.0.10

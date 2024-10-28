@@ -1,7 +1,4 @@
-FROM python:3.10.8
-
-ENV TZ=Asia/Shanghai
-ENV DEBIAN_FRONTEND=noninteractive
+FROM FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
 
 COPY ./requirements.txt /tmp/requirements.txt
 
