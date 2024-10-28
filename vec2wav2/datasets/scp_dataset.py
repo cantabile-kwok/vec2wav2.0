@@ -57,7 +57,6 @@ class AudioMelSCPDataset(Dataset):
         vqidx_scp,
         mel_scp,
         prompt_scp,
-        aux_scp,
         utt2num_frames=None,
         segments=None,
         batch_frames=None,
@@ -76,7 +75,6 @@ class AudioMelSCPDataset(Dataset):
             wav_scp (str): Kaldi-style wav.scp file.
             vqidx_scp (str): Kaldi-style fests.scp file.
             mel_scp (str): Kaldi-style fests.scp file.
-            aux_scp (str): Kaldi-style fests.scp file.
             segments (str): Kaldi-style segments file.
             min_num_frames (int): Threshold to remove short feature files.
             max_num_frames (int): Threshold to remove long feature files.
@@ -91,14 +89,8 @@ class AudioMelSCPDataset(Dataset):
         self.vqidx_loader = _get_feats_scp_loader(vqidx_scp)
         self.mel_loader = _get_feats_scp_loader(mel_scp)
 
-        # self.prompt_loader = dict()
-        # with open(prompt_scp, 'r') as fr:
-            # for line in fr.readlines():
-                # terms = line.strip().split()
-                # self.prompt_loader[terms[0]] = terms[1]
         self.prompt_loader = _get_feats_scp_loader(prompt_scp)
 
-        self.aux_loader = _get_feats_scp_loader(aux_scp)
         self.utt_ids = list(self.mel_loader.keys())
         self.return_utt_id = return_utt_id
         self.return_sampling_rate = return_sampling_rate
@@ -188,20 +180,15 @@ class AudioMelSCPDataset(Dataset):
             else:
                 fs, audio = self.audio_loader[utt_id]
                 mel = self.mel_loader[utt_id]
-                # prompt_path = self.prompt_loader[utt_id]
-                # prompt = torch.load(prompt_path).float().numpy()
                 prompt = self.prompt_loader[utt_id]
                 vqidx = self.vqidx_loader[utt_id]
 
-                aux = self.aux_loader[utt_id]
-
-                min_len = min(len(mel), len(vqidx), len(prompt)*self.prompt_len_factor, len(aux))
+                min_len = min(len(mel), len(vqidx), len(prompt)*self.prompt_len_factor)
                 assert ((abs(len(mel) - min_len) <= self.length_tolerance) and
                         (abs(len(vqidx) - min_len) <= self.length_tolerance) and
-                        (abs(len(prompt)*self.prompt_len_factor - min_len) <= self.length_tolerance) and
-                        (abs(len(aux) - min_len) <= self.length_tolerance)), \
+                        (abs(len(prompt)*self.prompt_len_factor - min_len) <= self.length_tolerance)), \
                     f"Audio feature lengths difference exceeds length tolerance for {utt_id}"
-                mel, vqidx, aux, prompt = mel[:min_len], vqidx[:min_len], aux[:min_len], prompt[:min_len//self.prompt_len_factor]
+                mel, vqidx, prompt = mel[:min_len], vqidx[:min_len], prompt[:min_len//self.prompt_len_factor]
 
                 # normalize audio signal to be [-1, 1]
                 audio = audio.astype(np.float32)
@@ -211,9 +198,9 @@ class AudioMelSCPDataset(Dataset):
                     audio = (audio, fs)
 
                 if self.return_utt_id:
-                    items = utt_id, audio, vqidx, mel, aux, prompt
+                    items = utt_id, audio, vqidx, mel, prompt
                 else:
-                    items = audio, vqidx, mel, aux, prompt
+                    items = audio, vqidx, mel, prompt
 
                 if self.allow_cache:
                     self.caches[utt_id] = items

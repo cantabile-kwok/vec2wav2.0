@@ -22,7 +22,7 @@ class Extractor:
     
     def extract(self, wav: np.ndarray) -> torch.Tensor:
         with torch.no_grad():
-            audio = torch.from_numpy(wav).float().unsqueeze(0).cuda()
+            audio = torch.from_numpy(wav).float().unsqueeze(0).to(self.device)
 
             z = self.model.feature_extractor(audio)
             _, idxs = self.model.vector_quantizer.forward_idx(z)
