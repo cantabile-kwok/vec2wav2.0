@@ -1,5 +1,8 @@
 FROM nvidia/cuda:11.6.1-cudnn8-runtime-ubuntu20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
 COPY ./requirements.txt /tmp/requirements.txt
 
 RUN apt-get update && \
