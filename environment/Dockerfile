@@ -1,13 +1,13 @@
-FROM nvidia/cuda:11.6.1-cudnn8-runtime-ubuntu20.04
+FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Shanghai
+# ENV DEBIAN_FRONTEND=noninteractive
+# ENV TZ=Asia/Shanghai
 
 COPY ./requirements.txt /tmp/requirements.txt
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y sudo build-essential python3.10 python3-pip vim wget git libsndfile1 espeak-ng sox zip && \
+    apt-get install -y sudo build-essential vim wget git libsndfile1 espeak-ng sox zip && \
     apt-get clean && \
-    pip3 install -r /tmp/requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu116 && \
+    pip install -r /tmp/requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu116 && \
     rm /tmp/requirements.txt
