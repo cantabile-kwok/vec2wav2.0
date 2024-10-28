@@ -1,8 +1,5 @@
 FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
 
-# ENV DEBIAN_FRONTEND=noninteractive
-# ENV TZ=Asia/Shanghai
-
 COPY ./requirements.txt /tmp/requirements.txt
 
 RUN apt-get update && \
