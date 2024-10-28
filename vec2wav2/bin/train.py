@@ -201,7 +201,6 @@ class Trainer(object):
         vqidx, _, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device)
         mel = mel.to(self.device)
-        # aux = aux.to(self.device)
         prompt = prompt.to(self.device)
         vqvec = idx2vec(self.feat_codebook, vqidx, self.feat_codebook_numgroups)  # (B, L, D)
         y = y.unsqueeze(-2).to(self.device)  # (B, 1, T)
@@ -232,11 +231,6 @@ class Trainer(object):
                                                    torch.masked_select(mel_, mask.unsqueeze(-1)))
                 self.total_train_loss["train/frontend_mel_pred_loss"] += frontend_mel_pred_loss.item()
                 gen_loss += self.config["lambda_frontend_mel_prediction"] * frontend_mel_pred_loss
-
-            # aux_pred_loss = F.l1_loss(torch.masked_select(aux, mask.unsqueeze(-1)),
-                                      # torch.masked_select(aux_, mask.unsqueeze(-1)))
-            # self.total_train_loss["train/aux_pred_loss"] += aux_pred_loss.item()
-            # gen_loss += self.config["lambda_aux_prediction"] * aux_pred_loss
 
             # multi-resolution sfft loss
             if self.config["use_stft_loss"]:
@@ -367,7 +361,6 @@ class Trainer(object):
         vqidx, aux, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device).long()
         mel = mel.to(self.device)
-        # aux = aux.to(self.device)
         prompt = prompt.to(self.device)
         vqvec = idx2vec(self.feat_codebook, vqidx, self.feat_codebook_numgroups)
         y = y.unsqueeze(-2).to(self.device)  # (B, 1, T)
@@ -395,12 +388,6 @@ class Trainer(object):
                                            torch.masked_select(mel_, mask.unsqueeze(-1)))
         self.total_eval_loss["eval/frontend_mel_pred_loss"] += frontend_mel_pred_loss.item()
         gen_loss += self.config["lambda_frontend_mel_prediction"] * frontend_mel_pred_loss
-
-        # aux prediction loss
-        # aux_pred_loss = F.l1_loss(torch.masked_select(aux, mask.unsqueeze(-1)),
-                                  # torch.masked_select(aux_, mask.unsqueeze(-1)))
-        # self.total_train_loss["eval/aux_pred_loss"] += aux_pred_loss.item()
-        # gen_loss += self.config["lambda_aux_prediction"] * aux_pred_loss
 
         # multi-resolution stft loss
         if self.config["use_stft_loss"]:
@@ -577,7 +564,7 @@ class Collator(object):
 
         Returns:
             Tensor ys: waveform batch (B, T).
-            Tensors vqs, auxs, mels: Auxiliary feature batch (B, C, T'), where T' = T / hop_size.
+            Tensors vqs, mels: Auxiliary feature batch (B, C, T'), where T' = T / hop_size.
             Tensor prompts: prompt feature batch (B, C, T'')
             List c_lengths, prompt_lengths: list of lengths
         """
@@ -585,8 +572,7 @@ class Collator(object):
 
         # check length
         batch = [self._adjust_length(*b) for b in batch]
-        # ys, vqs, mels, auxs, prompts_old = [b[0] for b in batch], [b[1] for b in batch], [b[2] for b in batch], [b[3] for b in batch], [b[4] for b in batch]
-        ys, vqs, mels, auxs, prompts_old = list(map(list, zip(*batch)))  # [(a,b), (c,d)] -> [a, c], [b, d]
+        ys, vqs, mels, prompts_old = list(map(list, zip(*batch)))  # [(a,b), (c,d)] -> [a, c], [b, d]
 
         batch_size = len(vqs)
 
@@ -599,25 +585,22 @@ class Collator(object):
                 start_idx = (prompt_starts[i] + prompt_lengths[i])*self.prompt_len_factor
                 mels[i] = mels[i][start_idx:]
                 vqs[i] = vqs[i][start_idx:]
-                auxs[i] = auxs[i][start_idx:]
                 ys[i] = ys[i][start_idx * self.hop_size: ]
             else:
                 end_idx = prompt_starts[i]*self.prompt_len_factor
                 mels[i] = mels[i][:end_idx]
                 vqs[i] = vqs[i][:end_idx]
-                auxs[i] = auxs[i][:end_idx]
                 ys[i] = ys[i][:end_idx * self.hop_size]
             c_lengths.append(len(mels[i]))
 
         vqs = pad_list([torch.tensor(c) for c in vqs], pad_value=0) # (B, L, Groups)
         vqs = vqs.long()
         mels = pad_list([torch.tensor(c) for c in mels], pad_value=0)  # (B, L, 80)
-        auxs = pad_list([torch.tensor(c) for c in auxs], pad_value=0)  # (B, L, 3)
 
         ys = pad_list([torch.tensor(y, dtype=torch.float) for y in ys], pad_value=0)[:, :mels.size(1) * self.hop_size]  # (B, T)
-        assert ys.size(1) == mels.size(1) * self.hop_size == auxs.size(1) * self.hop_size == vqs.size(1) * self.hop_size
+        assert ys.size(1) == mels.size(1) * self.hop_size == vqs.size(1) * self.hop_size
 
-        return vqs, auxs, mels, prompts, ys, c_lengths, prompt_lengths
+        return vqs, mels, prompts, ys, c_lengths, prompt_lengths
 
     def _adjust_length(self, x, c, *args):
         """Adjust the audio and feature lengths.

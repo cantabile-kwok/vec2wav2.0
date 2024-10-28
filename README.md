@@ -64,4 +64,4 @@ TO BE DONE.
 * [kan-bayashi/ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN) for the whole project structure.
 * [NVIDIA/BigVGAN](https://github.com/NVIDIA/BigVGAN) for the vocoder backbone.
 * [Kaldi](https://github.com/kaldi-asr/kaldi) and [ESPnet](https://github.com/espnet/espnet) for providing useful tools and Conformer implementation.
-* [fairseq](https://github.com/facebookresearch/fairseq) for some network architectures.
+* [Fairseq](https://github.com/facebookresearch/fairseq) for some network architectures.
