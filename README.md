@@ -12,6 +12,11 @@
 
 Please refere to `environment` directory for a `requirements.txt` and `Dockerfile`.
 
+In addition, for convenience, we also provide a Docker image for the Linux version, so you can easily run the Docker container:
+```sh
+docker run -it -v /path/to/vec2wav2.0:/workspace cantabilekwok511/vec2wav2.0:v0.2
+```
+
 ## Inference of Voice Conversion
 We provide a simple VC interface.
 
