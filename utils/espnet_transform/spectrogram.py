@@ -1,3 +1,5 @@
+# Modified Librosa spectrogram.py to ensure similar behavior with Kaldi
+
 import custom_librosa as librosa
 import numpy as np
 

@@ -1,3 +1,8 @@
+# Copyright 2024 Yiwei Guo
+#  Licensed under Apache 2.0
+
+"""Extract VQ indexes using vq-wav2vec model (from fairseq)"""
+
 import torch
 import logging
 from kaldiio import WriteHelper

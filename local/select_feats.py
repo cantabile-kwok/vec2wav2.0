@@ -1,3 +1,8 @@
+# Copyright 2024 Yiwei Guo
+#  Licensed under Apache 2.0
+
+"""Mimic kaldi select-feats command via python"""
+
 from kaldiio import ReadHelper, WriteHelper
 import sys
 from tqdm import tqdm
@@ -7,10 +12,8 @@ dim_range = sys.argv[1]
 rspecifier = sys.argv[2]
 wspecifier = sys.argv[3]
 
-
 # The Kaldi `select-feats` command provides more powerful dim range parsing functionality,
 # like 0,12-24,34-35. But we will only implement xx-yy here.
-
 
 def parse_dim_range(string):
     # x-y dim: includes both x and y (starting from 0)

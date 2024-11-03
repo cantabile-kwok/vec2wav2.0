@@ -1,3 +1,8 @@
+# Copyright 2024 Yiwei Guo
+#  Licensed under Apache 2.0
+
+"""Extract VQ indexes using WavLM model (from microsoft UniLM)"""
+
 import torch
 from vec2wav2.ssl_models.WavLM import WavLM, WavLMConfig
 import soundfile as sf
