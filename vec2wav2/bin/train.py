@@ -198,7 +198,7 @@ class Trainer(object):
     def _train_step(self, batch):
         """Train model one step."""
         # parse batch
-        vqidx, _, mel, prompt, y, xlens, prompt_lens = batch
+        vqidx, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device)
         mel = mel.to(self.device)
         prompt = prompt.to(self.device)
@@ -358,7 +358,7 @@ class Trainer(object):
     def _eval_step(self, batch):
         """Evaluate model one step."""
         # parse batch
-        vqidx, aux, mel, prompt, y, xlens, prompt_lens = batch
+        vqidx, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device).long()
         mel = mel.to(self.device)
         prompt = prompt.to(self.device)
@@ -560,7 +560,7 @@ class Collator(object):
         This collator will automatically determine the prompt segment (acoustic context) for each utterance.
         The prompt is cut off from the current utterance, ranging from one third to half of the original utterance.
         The prompt can be cut from either the starting or the ending of the utterance, within 1 second margin.
-        The other features include 3-dim auxiliary features, 2-dim VQ features (2 for number of groups), and D-dim prompts (e.g. WavLM features)
+        The other features include 2-dim VQ features (2 is the number of groups), and D-dim prompts (e.g. WavLM features)
 
         Returns:
             Tensor ys: waveform batch (B, T).
@@ -651,12 +651,6 @@ def main(rank, n_gpus):
         help="prompt scp (in this case, utt to path)"
     )
     parser.add_argument(
-        "--train-aux-scp",
-        default=None,
-        type=str,
-        help="kaldi-style feats.scp file for training. "
-    )
-    parser.add_argument(
         "--train-segments",
         default=None,
         type=str,
@@ -691,12 +685,6 @@ def main(rank, n_gpus):
         default=None,
         type=str,
         help="prompt scp (in this case, utt to path)"
-    )
-    parser.add_argument(
-        "--dev-aux-scp",
-        default=None,
-        type=str,
-        help="kaldi-style feats.scp file for vaidation. "
     )
     parser.add_argument(
         "--dev-segments",
@@ -791,7 +779,6 @@ def main(rank, n_gpus):
         vqidx_scp=args.train_vqidx_scp,
         mel_scp=args.train_mel_scp,
         prompt_scp=args.train_prompt_scp,
-        aux_scp=args.train_aux_scp,
         utt2num_frames=args.train_num_frames,
         segments=args.train_segments,
         batch_frames=config.get("batch_frames", None),
@@ -809,7 +796,6 @@ def main(rank, n_gpus):
         vqidx_scp=args.dev_vqidx_scp,
         mel_scp=args.dev_mel_scp,
         prompt_scp=args.dev_prompt_scp,
-        aux_scp=args.dev_aux_scp,
         utt2num_frames=args.dev_num_frames,
         segments=args.dev_segments,
         min_num_frames=config.get("min_num_frames", None),

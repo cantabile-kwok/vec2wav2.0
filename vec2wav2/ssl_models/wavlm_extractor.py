@@ -8,7 +8,11 @@ from vec2wav2.ssl_models.WavLM import WavLM, WavLMConfig
 import soundfile as sf
 from vec2wav2.utils.espnet_utils import pad_list, make_pad_mask
 import time
-
+from pathlib import Path
+import argparse
+from kaldiio import WriteHelper
+from tqdm import tqdm
+import logging
 
 class Extractor:
     def __init__(self, checkpoint="pretrained/WavLM-Large.pt", device="cuda", output_layer=6):
@@ -52,39 +56,26 @@ def calc_out_len(in_len, k, s):
 
 
 if __name__ == '__main__':
-    # run some tests.
-    wav_path_list = [
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000008_000004.wav"
-    ]*10
-    wav_list = []
-    for path in wav_path_list:
-        audio, fs = sf.read(path)
-        wav_list.append(audio)
-    wav_lens = [len(x) for x in wav_list]
-    conv_kernels = [10, 3, 3, 3, 3, 2, 2]
-    conv_strides = [5, 2, 2, 2, 2, 2, 2]
-    out_lens = []
-    for L in wav_lens:
-        x = L
-        for k, s in zip(conv_kernels, conv_strides):
-            x = calc_out_len(x, k, s)
-        out_lens.append(x)
-    print("wav lens:", wav_lens)
-    print('calculated output lens:', out_lens)
-    print('begins batch mode')
-    extractor = Extractor(checkpoint="pretrained/WavLM-Large.pt")
-    s = time.time()
-    feat = extractor.extract_batch(wav_list, out_lens)
-    t = time.time()
-    print('batch mode cost', t-s, 's')
-
-    print('begins single mode')
-    # single mode
-    s = time.time()
-    for wav in wav_list:
-        feat = extractor.extract(wav)
-    t = time.time()
-    print('single mode cost', t-s, 's')
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--wav-scp', type=str)
+    parser.add_argument("--out-dir", type=str)
+    parser.add_argument('--model', default="pretrained/WavLM-Large.pt", type=str)
+    parser.add_argument('--output-layer', default=6, type=int)
+    args = parser.parse_args()
+    
+    extractor = Extractor(checkpoint=args.model, 
+                          device="cuda" if torch.cuda.is_available() else "cpu", 
+                          output_layer=args.output_layer)
+    
+    out_dir=Path(args.out_dir).absolute()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    with open(args.wav_scp, 'r') as f, torch.no_grad(), WriteHelper(f"ark,scp:{out_dir}/feats.ark,{out_dir}/feats.scp") as writer:
+        for line in tqdm(f.readlines()):
+            uttid, wav_path = line.strip().split(maxsplit=1)
+            logging.info("Extracting " + uttid)
+            audio, sample_rate = sf.read(wav_path)
+            rep = extractor.extract(audio)
+            rep = rep.cpu().numpy()
+            writer(uttid, rep)
+    

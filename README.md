@@ -6,7 +6,7 @@
 ![python](https://img.shields.io/badge/Python_3.10-orange?logo=python&logoColor=white)
 
 > [!IMPORTANT] 
-> Training code will be released in near future. Stay tuned!
+> Pretrained model (with vq-wav2vec as input) and training procedure are released!
 
 ## Environment
 
@@ -19,7 +19,7 @@ docker pull cantabilekwok511/vec2wav2.0:v0.2
 docker run -it -v /path/to/vec2wav2.0:/workspace cantabilekwok511/vec2wav2.0:v0.2
 ```
 
-## Inference of Voice Conversion
+## Voice Conversion with Pretrained Model
 We provide a simple VC interface.
 
 First, please make sure some required models are downloaded in the `pretrained/` directory:
@@ -45,8 +45,26 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav
 where `$source_wav, $speaker_prompt` should both be mono-channel audio and preferably `.wav` files.
 This script by default tries to load `pretrained/generator.ckpt` and the corresponding `config.yml`. You can provide `--expdir` to change this path.
 
+If you have trained you own model under $expdir, please specify the checkpoint filename:
+```
+vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
+      --expdir $expdir --checkpoint /path/to/checkpoint.pkl
+```
+
 ## Training
-TO BE DONE.
+First, we need to set up data manifests and features. Please refer to `./data_prep.md` for a guide on LibriTTS dataset.
+
+Then, please refer to `./train.sh` for training. It will automatically launch pytorch DDP training on all the devices in `CUDA_VISIBLE_DEVICES`. Please change `os.environ["MASTER_PORT"]` in `vec2wav2/bin/train.py` if you need.
+
+## Decoding (VQ tokens to wav)
+
+If you want to decode VQ features in existing `feats.scp` into wavs, you can use
+```
+decode.py --feats-scp /path/to/feats.scp --prompt-scp /path/to/prompt.scp \
+          --checkpoint /path/to/checkpoint.pkl --config /path/to/config.yml \
+          --outdir /path/to/output_dir
+```
+Here, `prompt.scp` specifies every utterance (content VQ tokens) and its prompts (WavLM features). It is organized in a similar style with `feats.scp`.
 
 ## Citation
 ```

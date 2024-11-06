@@ -57,7 +57,8 @@ if __name__ == "__main__":
     
     # optional arguments
     parser.add_argument("--expdir", default="pretrained/", type=str,
-                        help="path to find model checkpoints and configs")
+                        help="path to find model checkpoints and configs. Will load expdir/generator.ckpt and expdir/config.yml.")
+    parser.add_argument('--checkpoint', default=None, type=str, help="checkpoint path (.pkl). If provided, will override expdir.")
     parser.add_argument("--token-extractor", default="pretrained/vq-wav2vec_kmeans.pt", type=str,
                         help="checkpoint or model flag of input token extractor")
     parser.add_argument("--prompt-extractor", default="pretrained/WavLM-Large.pt", type=str,
@@ -98,7 +99,10 @@ if __name__ == "__main__":
         # load VC model
         with open(f"{args.expdir}/config.yml") as f:
             config = yaml.load(f, Loader=yaml.Loader)
-        checkpoint = f"{args.expdir}/generator.ckpt"
+        if args.checkpoint:
+            checkpoint = args.checkpoint
+        else:
+            checkpoint = f"{args.expdir}/generator.ckpt"
         model = load_model(checkpoint, config)
         script_logger.info(f"Successfully set up VC model from {checkpoint}")
         model.backend.remove_weight_norm()
