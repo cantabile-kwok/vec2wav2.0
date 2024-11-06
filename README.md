@@ -52,9 +52,9 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
 ```
 
 ## Training
-First, we need to set up data manifests and features. Please refer to `./data_prep.md` for a guide on LibriTTS dataset.
+First, we need to set up data manifests and features. Please refer to [`./data_prep.md`](./data_prep.md) for a guide on LibriTTS dataset.
 
-Then, please refer to `./train.sh` for training. It will automatically launch pytorch DDP training on all the devices in `CUDA_VISIBLE_DEVICES`. Please change `os.environ["MASTER_PORT"]` in `vec2wav2/bin/train.py` if you need.
+Then, please refer to [`./train.sh`](./train.sh) for training. It will automatically launch pytorch DDP training on all the devices in `CUDA_VISIBLE_DEVICES`. Please change `os.environ["MASTER_PORT"]` in `vec2wav2/bin/train.py` if you need.
 
 ## Decoding (VQ tokens to wav)
 
