@@ -4,7 +4,7 @@ We take the LibriTTS (including `clean` and `other` partitions) for example.
 
 ### `data/` directory: data manifests
 We have organized the `data` directory containing all the LibriTTS data. Here are the steps to establish the `data` dir.
-1. Please download from [here](https://huggingface.co/datasets/cantabile-kwok/libritts-all-kaldi-data/resolve/main/data_24k.zip?download=true) (about 5MB), and unzip it to `data` in the project root. Every sub-directory contains `utt2spk, spk2utt` and `wav.scp` files. They are all plain texts, with `<key> <value>` in each line.
+1. Please download from [here](https://huggingface.co/datasets/cantabile-kwok/libritts-all-kaldi-data/resolve/main/data_24k.zip?download=true) (about 5MB), and unzip it to `data` in the project root. Every sub-directory contains a `wav.scp` file. It is a plain text file, with `<key> <value>` in each line. **NOTE: only `wav.scp` is needed for training** although `utt2spk,spk2utt` are also present.
 2. Then, change the paths in `wav.scp` to the correct ones in your machine.
 
 ### `feats/` directory: speech features
