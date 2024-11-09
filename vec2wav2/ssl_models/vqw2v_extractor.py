@@ -13,6 +13,7 @@ import numpy as np
 from pathlib import Path
 import soundfile as sf
 from tqdm import tqdm
+from vec2wav2.utils.utils import read_wav_16k
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s (%(module)s:%(lineno)d) %(levelname)s: %(message)s')
 
@@ -60,7 +61,7 @@ if __name__ == "__main__":
         for line in tqdm(f.readlines()):
             uttid, wav_path = line.strip().split(maxsplit=1)
             logging.info("Extracting " + uttid)
-            audio, sample_rate = sf.read(wav_path)
+            audio = read_wav_16k(wav_path)
             idxs = extractor.extract(audio).cpu().numpy()
             idxs = idxs.astype(float)
             writer(uttid, idxs)

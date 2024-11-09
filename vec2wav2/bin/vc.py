@@ -11,20 +11,10 @@ from vec2wav2.ssl_models.wavlm_extractor import Extractor as WavLMExtractor
 import torch
 import logging
 import argparse
-from vec2wav2.utils.utils import load_model, load_feat_codebook, idx2vec
+from vec2wav2.utils.utils import load_model, load_feat_codebook, idx2vec, read_wav_16k
 import soundfile as sf
-import torchaudio.transforms as transforms
 import yaml
 
-
-def read_wav_16k(path):
-    wav, sr = sf.read(path)
-    if sr != 16000:
-        audio_tensor = torch.tensor(wav, dtype=torch.float32)
-        resampler = transforms.Resample(orig_freq=sr, new_freq=16000)
-        wav = resampler(audio_tensor)
-        wav = wav.numpy()
-    return wav
 
 def configure_logging(verbose):
     if verbose:

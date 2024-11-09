@@ -13,6 +13,7 @@ import argparse
 from kaldiio import WriteHelper
 from tqdm import tqdm
 import logging
+from vec2wav2.utils.utils import read_wav_16k
 
 class Extractor:
     def __init__(self, checkpoint="pretrained/WavLM-Large.pt", device="cuda", output_layer=6):
@@ -74,7 +75,7 @@ if __name__ == '__main__':
         for line in tqdm(f.readlines()):
             uttid, wav_path = line.strip().split(maxsplit=1)
             logging.info("Extracting " + uttid)
-            audio, sample_rate = sf.read(wav_path)
+            audio = read_wav_16k(wav_path)
             rep = extractor.extract(audio)
             rep = rep.cpu().numpy()
             writer(uttid, rep)
