@@ -61,6 +61,6 @@ if __name__ == "__main__":
             uttid, wav_path = line.strip().split(maxsplit=1)
             logging.info("Extracting " + uttid)
             audio, sample_rate = sf.read(wav_path)
-            idxs = extractor.extract(audio)
+            idxs = extractor.extract(audio).cpu().numpy()
             idxs = idxs.astype(float)
             writer(uttid, idxs)
