@@ -34,8 +34,8 @@ This will create `feats/fbank` and `feats/normed_fbank` each about 16GB. You can
 * **WavLM features**. As they are too large, please use `vec2wav2/ssl_models/wavlm_extractor.py` to extract them locally:
   ```bash
   name=train_all  # change to dev_all or eval_all for different splits
-  python vec2wav2/ssl_models/wavlm_extractor.py --wav-scp data/$name/wav_scp \
-                     --out_dir feats/wavlm_l6/$name/ --output-layer 6
+  python vec2wav2/ssl_models/wavlm_extractor.py --wav-scp data/$name/wav.scp \
+                     --out-dir feats/wavlm_l6/$name/ --output-layer 6
   ```
   This will create `feats/wavlm_l6/$name/feats.ark` and `feats.scp`. ⚠️Note that the WavLM features for entire training set can be very large (~380GB)! It is also reasonable to extract them on-the-fly, but this might slow down training.
 
