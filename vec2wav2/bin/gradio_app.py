@@ -30,8 +30,8 @@ def create_interface():
             target_audio = gr.Audio(label="Target Speaker Audio", type="filepath")
         
         examples = [
-            ["examples/Zuckerberg.wav", "examples/Rachel.wav"],
-            ["examples/TheresaMay.wav", "examples/OptimusPrime.wav"]
+            ["examples/TheresaMay.wav", "examples/OptimusPrime.wav"],
+            ["examples/Zuckerberg.wav", "examples/Rachel.wav"]
         ]
         gr.Examples(examples, label="Examples", inputs=[source_audio, target_audio])
 

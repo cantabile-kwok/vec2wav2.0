@@ -4,6 +4,7 @@
 [![demo](https://img.shields.io/badge/demo-page-green)](https://cantabile-kwok.github.io/vec2wav2/)
 ![docker](https://img.shields.io/badge/Docker-blue?logo=docker&logoColor=white)
 ![python](https://img.shields.io/badge/Python_3.10-orange?logo=python&logoColor=white)
+[![huggingface](https://img.shields.io/badge/Interactive_Demo-HuggingFace-yellow)](https://huggingface.co/spaces/cantabile-kwok/vec2wav2.0-demo)
 
 > [!IMPORTANT] 
 > Pretrained model (with vq-wav2vec as input) and training procedure are released!
@@ -53,7 +54,10 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
 
 ### Web Interface
 
-We also provide a VC web interface using Gradio. To launch it:
+We also provide a VC web interface using Gradio. 
+To try our online interactive demo: [🤗HuggingFace](https://huggingface.co/spaces/cantabile-kwok/vec2wav2.0-demo).
+
+To launch it locally:
 
 ```
 # Make sure gradio is installed first
