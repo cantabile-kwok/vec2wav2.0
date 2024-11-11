@@ -51,6 +51,23 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
       --expdir $expdir --checkpoint /path/to/checkpoint.pkl
 ```
 
+### Web Interface
+
+We also provide a VC web interface using Gradio. To launch it:
+
+```
+python vec2wav2/bin/gradio_app.py
+```
+
+This will start a local web server and open the interface in your browser. You can:
+1. Upload source audio (the voice you want to convert)
+2. Upload target speaker audio (the voice you want to convert to)
+3. Click "Convert Voice" to perform the conversion
+4. Listen to or download the converted audio
+
+The web interface uses the same models and settings as the command-line tool.
+
+
 ## Training
 First, we need to set up data manifests and features. Please refer to [`./data_prep.md`](./data_prep.md) for a guide on LibriTTS dataset.
 
