@@ -1,3 +1,8 @@
+# Copyright 2024 Yiwei Guo
+#  Licensed under Apache 2.0
+
+"""Extract VQ indexes using vq-wav2vec model (from fairseq)"""
+
 import torch
 import logging
 from kaldiio import WriteHelper
@@ -8,6 +13,7 @@ import numpy as np
 from pathlib import Path
 import soundfile as sf
 from tqdm import tqdm
+from vec2wav2.utils.utils import read_wav_16k
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s (%(module)s:%(lineno)d) %(levelname)s: %(message)s')
 
@@ -22,7 +28,7 @@ class Extractor:
     
     def extract(self, wav: np.ndarray) -> torch.Tensor:
         with torch.no_grad():
-            audio = torch.from_numpy(wav).float().unsqueeze(0).cuda()
+            audio = torch.from_numpy(wav).float().unsqueeze(0).to(self.device)
 
             z = self.model.feature_extractor(audio)
             _, idxs = self.model.vector_quantizer.forward_idx(z)
@@ -55,7 +61,7 @@ if __name__ == "__main__":
         for line in tqdm(f.readlines()):
             uttid, wav_path = line.strip().split(maxsplit=1)
             logging.info("Extracting " + uttid)
-            audio, sample_rate = sf.read(wav_path)
-            idxs = extractor.extract(audio)
+            audio = read_wav_16k(wav_path)
+            idxs = extractor.extract(audio).cpu().numpy()
             idxs = idxs.astype(float)
             writer(uttid, idxs)

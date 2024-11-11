@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# Copyright 2024 Yiwei Guo
+#   Licensed under the Apache 2.0 license.
+
+"""vec2wav2.0 main architectures"""
 
 import torch
 from vec2wav2.models.conformer.decoder import Decoder as ConformerDecoder

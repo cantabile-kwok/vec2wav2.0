@@ -1,9 +1,19 @@
+# Copyright 2024 Yiwei Guo
+#  Licensed under Apache 2.0
+
+"""Extract VQ indexes using WavLM model (from microsoft UniLM)"""
+
 import torch
 from vec2wav2.ssl_models.WavLM import WavLM, WavLMConfig
 import soundfile as sf
 from vec2wav2.utils.espnet_utils import pad_list, make_pad_mask
 import time
-
+from pathlib import Path
+import argparse
+from kaldiio import WriteHelper
+from tqdm import tqdm
+import logging
+from vec2wav2.utils.utils import read_wav_16k
 
 class Extractor:
     def __init__(self, checkpoint="pretrained/WavLM-Large.pt", device="cuda", output_layer=6):
@@ -28,6 +38,7 @@ class Extractor:
 
     def extract_batch(self, wav_list, frame_lens):
         # suppose wav is already a tensor padded with 0
+        # should be careful with LayerNorm since it may cause difference between batch vs single modes.
         pad_mask = make_pad_mask(frame_lens).to(self.device)
         with torch.no_grad():
             wav_input_16khz = [torch.from_numpy(wav).float().to(self.device) for wav in wav_list]
@@ -46,61 +57,26 @@ def calc_out_len(in_len, k, s):
 
 
 if __name__ == '__main__':
-    wav_path_list = [
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000003_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000004_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000000.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000005_000001.wav",
-        "dataset/LibriTTS/16k-dev-other/116/288045/116_288045_000008_000004.wav"
-    ]*10
-    wav_list = []
-    for path in wav_path_list:
-        audio, fs = sf.read(path)
-        wav_list.append(audio)
-    wav_lens = [len(x) for x in wav_list]
-    conv_kernels = [10, 3, 3, 3, 3, 2, 2]
-    conv_strides = [5, 2, 2, 2, 2, 2, 2]
-    out_lens = []
-    for L in wav_lens:
-        x = L
-        for k, s in zip(conv_kernels, conv_strides):
-            x = calc_out_len(x, k, s)
-        out_lens.append(x)
-    print("wav lens:", wav_lens)
-    print('calculated output lens:', out_lens)
-    # wav_tensor = torch.zeros(size=(len(wav_path_list), max(wav_lens)))
-    # for i, wav in enumerate(wav_list):
-    #     wav_tensor[i, :len(wav)] = torch.from_numpy(wav).float()
-    # print(wav_tensor)
-    print('begins batch mode')
-    extractor = Extractor(checkpoint="pretrained/WavLM-Large.pt")
-    s = time.time()
-    feat = extractor.extract_batch(wav_list, out_lens)
-    t = time.time()
-    # feat = extractor.extract(audio)
-    # print(feat.shape)
-    # for i in range(len(feat)):
-    #     print(feat[i, :out_lens[i]])
-    print('batch mode cost', t-s, 's')
-
-    print('begins single mode')
-    # single mode
-    s = time.time()
-    for wav in wav_list:
-        feat = extractor.extract(wav)
-        # print(feat)
-    t = time.time()
-    print('single mode cost', t-s, 's')
-
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--wav-scp', type=str)
+    parser.add_argument("--out-dir", type=str)
+    parser.add_argument('--model', default="pretrained/WavLM-Large.pt", type=str)
+    parser.add_argument('--output-layer', default=6, type=int)
+    args = parser.parse_args()
+    
+    extractor = Extractor(checkpoint=args.model, 
+                          device="cuda" if torch.cuda.is_available() else "cpu", 
+                          output_layer=args.output_layer)
+    
+    out_dir=Path(args.out_dir).absolute()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    with open(args.wav_scp, 'r') as f, torch.no_grad(), WriteHelper(f"ark,scp:{out_dir}/feats.ark,{out_dir}/feats.scp") as writer:
+        for line in tqdm(f.readlines()):
+            uttid, wav_path = line.strip().split(maxsplit=1)
+            logging.info("Extracting " + uttid)
+            audio = read_wav_16k(wav_path)
+            rep = extractor.extract(audio)
+            rep = rep.cpu().numpy()
+            writer(uttid, rep)
+    

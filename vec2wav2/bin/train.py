@@ -198,10 +198,9 @@ class Trainer(object):
     def _train_step(self, batch):
         """Train model one step."""
         # parse batch
-        vqidx, _, mel, prompt, y, xlens, prompt_lens = batch
+        vqidx, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device)
         mel = mel.to(self.device)
-        # aux = aux.to(self.device)
         prompt = prompt.to(self.device)
         vqvec = idx2vec(self.feat_codebook, vqidx, self.feat_codebook_numgroups)  # (B, L, D)
         y = y.unsqueeze(-2).to(self.device)  # (B, 1, T)
@@ -232,11 +231,6 @@ class Trainer(object):
                                                    torch.masked_select(mel_, mask.unsqueeze(-1)))
                 self.total_train_loss["train/frontend_mel_pred_loss"] += frontend_mel_pred_loss.item()
                 gen_loss += self.config["lambda_frontend_mel_prediction"] * frontend_mel_pred_loss
-
-            # aux_pred_loss = F.l1_loss(torch.masked_select(aux, mask.unsqueeze(-1)),
-                                      # torch.masked_select(aux_, mask.unsqueeze(-1)))
-            # self.total_train_loss["train/aux_pred_loss"] += aux_pred_loss.item()
-            # gen_loss += self.config["lambda_aux_prediction"] * aux_pred_loss
 
             # multi-resolution sfft loss
             if self.config["use_stft_loss"]:
@@ -364,10 +358,9 @@ class Trainer(object):
     def _eval_step(self, batch):
         """Evaluate model one step."""
         # parse batch
-        vqidx, aux, mel, prompt, y, xlens, prompt_lens = batch
+        vqidx, mel, prompt, y, xlens, prompt_lens = batch
         vqidx = vqidx.to(self.device).long()
         mel = mel.to(self.device)
-        # aux = aux.to(self.device)
         prompt = prompt.to(self.device)
         vqvec = idx2vec(self.feat_codebook, vqidx, self.feat_codebook_numgroups)
         y = y.unsqueeze(-2).to(self.device)  # (B, 1, T)
@@ -395,12 +388,6 @@ class Trainer(object):
                                            torch.masked_select(mel_, mask.unsqueeze(-1)))
         self.total_eval_loss["eval/frontend_mel_pred_loss"] += frontend_mel_pred_loss.item()
         gen_loss += self.config["lambda_frontend_mel_prediction"] * frontend_mel_pred_loss
-
-        # aux prediction loss
-        # aux_pred_loss = F.l1_loss(torch.masked_select(aux, mask.unsqueeze(-1)),
-                                  # torch.masked_select(aux_, mask.unsqueeze(-1)))
-        # self.total_train_loss["eval/aux_pred_loss"] += aux_pred_loss.item()
-        # gen_loss += self.config["lambda_aux_prediction"] * aux_pred_loss
 
         # multi-resolution stft loss
         if self.config["use_stft_loss"]:
@@ -573,11 +560,11 @@ class Collator(object):
         This collator will automatically determine the prompt segment (acoustic context) for each utterance.
         The prompt is cut off from the current utterance, ranging from one third to half of the original utterance.
         The prompt can be cut from either the starting or the ending of the utterance, within 1 second margin.
-        The other features include 3-dim auxiliary features, 2-dim VQ features (2 for number of groups), and D-dim prompts (e.g. WavLM features)
+        The other features include 2-dim VQ features (2 is the number of groups), and D-dim prompts (e.g. WavLM features)
 
         Returns:
             Tensor ys: waveform batch (B, T).
-            Tensors vqs, auxs, mels: Auxiliary feature batch (B, C, T'), where T' = T / hop_size.
+            Tensors vqs, mels: Auxiliary feature batch (B, C, T'), where T' = T / hop_size.
             Tensor prompts: prompt feature batch (B, C, T'')
             List c_lengths, prompt_lengths: list of lengths
         """
@@ -585,8 +572,7 @@ class Collator(object):
 
         # check length
         batch = [self._adjust_length(*b) for b in batch]
-        # ys, vqs, mels, auxs, prompts_old = [b[0] for b in batch], [b[1] for b in batch], [b[2] for b in batch], [b[3] for b in batch], [b[4] for b in batch]
-        ys, vqs, mels, auxs, prompts_old = list(map(list, zip(*batch)))  # [(a,b), (c,d)] -> [a, c], [b, d]
+        ys, vqs, mels, prompts_old = list(map(list, zip(*batch)))  # [(a,b), (c,d)] -> [a, c], [b, d]
 
         batch_size = len(vqs)
 
@@ -599,25 +585,22 @@ class Collator(object):
                 start_idx = (prompt_starts[i] + prompt_lengths[i])*self.prompt_len_factor
                 mels[i] = mels[i][start_idx:]
                 vqs[i] = vqs[i][start_idx:]
-                auxs[i] = auxs[i][start_idx:]
                 ys[i] = ys[i][start_idx * self.hop_size: ]
             else:
                 end_idx = prompt_starts[i]*self.prompt_len_factor
                 mels[i] = mels[i][:end_idx]
                 vqs[i] = vqs[i][:end_idx]
-                auxs[i] = auxs[i][:end_idx]
                 ys[i] = ys[i][:end_idx * self.hop_size]
             c_lengths.append(len(mels[i]))
 
         vqs = pad_list([torch.tensor(c) for c in vqs], pad_value=0) # (B, L, Groups)
         vqs = vqs.long()
         mels = pad_list([torch.tensor(c) for c in mels], pad_value=0)  # (B, L, 80)
-        auxs = pad_list([torch.tensor(c) for c in auxs], pad_value=0)  # (B, L, 3)
 
         ys = pad_list([torch.tensor(y, dtype=torch.float) for y in ys], pad_value=0)[:, :mels.size(1) * self.hop_size]  # (B, T)
-        assert ys.size(1) == mels.size(1) * self.hop_size == auxs.size(1) * self.hop_size == vqs.size(1) * self.hop_size
+        assert ys.size(1) == mels.size(1) * self.hop_size == vqs.size(1) * self.hop_size
 
-        return vqs, auxs, mels, prompts, ys, c_lengths, prompt_lengths
+        return vqs, mels, prompts, ys, c_lengths, prompt_lengths
 
     def _adjust_length(self, x, c, *args):
         """Adjust the audio and feature lengths.
@@ -668,12 +651,6 @@ def main(rank, n_gpus):
         help="prompt scp (in this case, utt to path)"
     )
     parser.add_argument(
-        "--train-aux-scp",
-        default=None,
-        type=str,
-        help="kaldi-style feats.scp file for training. "
-    )
-    parser.add_argument(
         "--train-segments",
         default=None,
         type=str,
@@ -708,12 +685,6 @@ def main(rank, n_gpus):
         default=None,
         type=str,
         help="prompt scp (in this case, utt to path)"
-    )
-    parser.add_argument(
-        "--dev-aux-scp",
-        default=None,
-        type=str,
-        help="kaldi-style feats.scp file for vaidation. "
     )
     parser.add_argument(
         "--dev-segments",
@@ -808,7 +779,6 @@ def main(rank, n_gpus):
         vqidx_scp=args.train_vqidx_scp,
         mel_scp=args.train_mel_scp,
         prompt_scp=args.train_prompt_scp,
-        aux_scp=args.train_aux_scp,
         utt2num_frames=args.train_num_frames,
         segments=args.train_segments,
         batch_frames=config.get("batch_frames", None),
@@ -826,7 +796,6 @@ def main(rank, n_gpus):
         vqidx_scp=args.dev_vqidx_scp,
         mel_scp=args.dev_mel_scp,
         prompt_scp=args.dev_prompt_scp,
-        aux_scp=args.dev_aux_scp,
         utt2num_frames=args.dev_num_frames,
         segments=args.dev_segments,
         min_num_frames=config.get("min_num_frames", None),

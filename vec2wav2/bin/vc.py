@@ -1,27 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright 2024 Yiwei Guo
+
+""" Run VC inference with trained model """
 
 import vec2wav2
 from vec2wav2.ssl_models.vqw2v_extractor import Extractor as VQW2VExtractor
 from vec2wav2.ssl_models.wavlm_extractor import Extractor as WavLMExtractor
-from vec2wav2.ssl_models.w2v2_extractor import Extractor as W2V2Extractor
+# from vec2wav2.ssl_models.w2v2_extractor import Extractor as W2V2Extractor
 import torch
 import logging
 import argparse
-from vec2wav2.utils.utils import load_model, load_feat_codebook, idx2vec
+from vec2wav2.utils.utils import load_model, load_feat_codebook, idx2vec, read_wav_16k
 import soundfile as sf
-import torchaudio.transforms as transforms
 import yaml
 
-
-def read_wav_16k(path):
-    wav, sr = sf.read(path)
-    if sr != 16000:
-        audio_tensor = torch.tensor(wav, dtype=torch.float32)
-        resampler = transforms.Resample(orig_freq=sr, new_freq=16000)
-        wav = resampler(audio_tensor)
-        wav = wav.numpy()
-    return wav
 
 def configure_logging(verbose):
     if verbose:
@@ -54,7 +47,8 @@ if __name__ == "__main__":
     
     # optional arguments
     parser.add_argument("--expdir", default="pretrained/", type=str,
-                        help="path to find model checkpoints and configs")
+                        help="path to find model checkpoints and configs. Will load expdir/generator.ckpt and expdir/config.yml.")
+    parser.add_argument('--checkpoint', default=None, type=str, help="checkpoint path (.pkl). If provided, will override expdir.")
     parser.add_argument("--token-extractor", default="pretrained/vq-wav2vec_kmeans.pt", type=str,
                         help="checkpoint or model flag of input token extractor")
     parser.add_argument("--prompt-extractor", default="pretrained/WavLM-Large.pt", type=str,
@@ -95,7 +89,10 @@ if __name__ == "__main__":
         # load VC model
         with open(f"{args.expdir}/config.yml") as f:
             config = yaml.load(f, Loader=yaml.Loader)
-        checkpoint = f"{args.expdir}/generator.ckpt"  # TODO: need think
+        if args.checkpoint:
+            checkpoint = args.checkpoint
+        else:
+            checkpoint = f"{args.expdir}/generator.ckpt"
         model = load_model(checkpoint, config)
         script_logger.info(f"Successfully set up VC model from {checkpoint}")
         model.backend.remove_weight_norm()
@@ -106,6 +103,5 @@ if __name__ == "__main__":
         converted = model.inference(vqvec, prompt)[-1].view(-1)
 
         # save output wav
-        sf.write(args.output, converted.cpu().numpy(), config['sampling_rate'])  # TODO: check sampling_rate key 
+        sf.write(args.output, converted.cpu().numpy(), config['sampling_rate'])
         script_logger.info(f"Saved audio file to {args.output}")
-        

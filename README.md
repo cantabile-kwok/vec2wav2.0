@@ -6,13 +6,20 @@
 ![python](https://img.shields.io/badge/Python_3.10-orange?logo=python&logoColor=white)
 
 > [!IMPORTANT] 
-> Training code will be released in near future. Stay tuned!
+> Pretrained model (with vq-wav2vec as input) and training procedure are released!
 
 ## Environment
 
-Please refere to `environment` directory for a `requirements.txt` and `Dockerfile`.
+Please refer to `environment` directory for a `requirements.txt` and `Dockerfile`.
 
-## Inference of Voice Conversion
+In addition, for convenience, we also provide a Docker image for Linux, so you can easily run the Docker container:
+
+```sh
+docker pull cantabilekwok511/vec2wav2.0:v0.2
+docker run -it -v /path/to/vec2wav2.0:/workspace cantabilekwok511/vec2wav2.0:v0.2
+```
+
+## Voice Conversion with Pretrained Model
 We provide a simple VC interface.
 
 First, please make sure some required models are downloaded in the `pretrained/` directory:
@@ -38,9 +45,15 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav
 where `$source_wav, $speaker_prompt` should both be mono-channel audio and preferably `.wav` files.
 This script by default tries to load `pretrained/generator.ckpt` and the corresponding `config.yml`. You can provide `--expdir` to change this path.
 
+If you have trained you own model under $expdir, please specify the checkpoint filename:
+```
+vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
+      --expdir $expdir --checkpoint /path/to/checkpoint.pkl
+```
+
 ### Web Interface
 
-We also provide a web interface using Gradio. To launch it:
+We also provide a VC web interface using Gradio. To launch it:
 
 ```
 python vec2wav2/bin/gradio_app.py
@@ -54,8 +67,21 @@ This will start a local web server and open the interface in your browser. You c
 
 The web interface uses the same models and settings as the command-line tool.
 
+
 ## Training
-TO BE DONE.
+First, we need to set up data manifests and features. Please refer to [`./data_prep.md`](./data_prep.md) for a guide on LibriTTS dataset.
+
+Then, please refer to [`./train.sh`](./train.sh) for training. It will automatically launch pytorch DDP training on all the devices in `CUDA_VISIBLE_DEVICES`. Please change `os.environ["MASTER_PORT"]` in `vec2wav2/bin/train.py` if you need.
+
+## Decoding (VQ tokens to wav)
+
+If you want to decode VQ features in existing `feats.scp` into wavs, you can use
+```
+decode.py --feats-scp /path/to/feats.scp --prompt-scp /path/to/prompt.scp \
+          --checkpoint /path/to/checkpoint.pkl --config /path/to/config.yml \
+          --outdir /path/to/output_dir
+```
+Here, `prompt.scp` specifies every utterance (content VQ tokens) and its prompts (WavLM features). It is organized in a similar style with `feats.scp`.
 
 ## Citation
 ```
@@ -72,6 +98,12 @@ TO BE DONE.
 <!-- The vec2wav family are speech token vocoders that are important modules in speech generation based on discrete tokens (esp. semantic tokens!). -->
 
 * [[paper]](https://arxiv.org/abs/2204.00768) **vec2wav** in VQTTS. Single-speaker.
-* [[paper]](https://ojs.aaai.org/index.php/AAAI/article/view/29747)[[code]](https://github.com/X-LANCE/UniCATS-CTX-vec2wav) **CTX-vec2wav** in UniCATS. Multi-speaker with acoustic prompts.
+* [[paper]](https://ojs.aaai.org/index.php/AAAI/article/view/29747)[[code]](https://github.com/X-LANCE/UniCATS-CTX-vec2wav) **CTX-vec2wav** in UniCATS. Multi-speaker with acoustic prompts. Lots of code borrowed from there.
 * 🌟(This) **vec2wav 2.0**. Enhanced in timbre controllability, best for VC!
 
+## Acknowledgements
+
+* [kan-bayashi/ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN) for the whole project structure.
+* [NVIDIA/BigVGAN](https://github.com/NVIDIA/BigVGAN) for the vocoder backbone.
+* [Kaldi](https://github.com/kaldi-asr/kaldi) and [ESPnet](https://github.com/espnet/espnet) for providing useful tools and Conformer implementation.
+* [Fairseq](https://github.com/facebookresearch/fairseq) for some network architectures.

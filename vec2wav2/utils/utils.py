@@ -18,6 +18,18 @@ import h5py
 import numpy as np
 import torch
 import yaml
+import soundfile as sf
+import torchaudio.transforms as transforms
+
+
+def read_wav_16k(path):
+    wav, sr = sf.read(path)
+    if sr != 16000:
+        audio_tensor = torch.tensor(wav, dtype=torch.float32)
+        resampler = transforms.Resample(orig_freq=sr, new_freq=16000)
+        wav = resampler(audio_tensor)
+        wav = wav.numpy()
+    return wav
 
 
 def find_files(root_dir, query="*.wav", include_root_dir=True):
