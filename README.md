@@ -56,6 +56,8 @@ vc.py -s $source_wav -t $speaker_prompt -o $output_wav \
 We also provide a VC web interface using Gradio. To launch it:
 
 ```
+# Make sure gradio is installed first
+pip install gradio
 python vec2wav2/bin/gradio_app.py
 ```
 

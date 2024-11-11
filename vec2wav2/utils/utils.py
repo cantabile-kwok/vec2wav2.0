@@ -21,15 +21,22 @@ import yaml
 import soundfile as sf
 import torchaudio.transforms as transforms
 
+def read_wav_16k(audio_path):
+    """Process audio file to 16kHz sample rate"""
+    if isinstance(audio_path, tuple):  # Gradio audio input returns (sample_rate, audio_data)
+        wav = audio_path[1]
+        sr = audio_path[0]
+    else:  # Regular file path
+        assert os.path.exists(audio_path), f"File not found: {audio_path}"
+        wav, sr = sf.read(audio_path)
 
-def read_wav_16k(path):
-    wav, sr = sf.read(path)
     if sr != 16000:
         audio_tensor = torch.tensor(wav, dtype=torch.float32)
         resampler = transforms.Resample(orig_freq=sr, new_freq=16000)
         wav = resampler(audio_tensor)
         wav = wav.numpy()
     return wav
+
 
 
 def find_files(root_dir, query="*.wav", include_root_dir=True):
