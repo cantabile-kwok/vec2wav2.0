@@ -23,6 +23,16 @@ and we provide the extracted VQ index sequences with codebook online.
    
 Note that you can use `vec2wav2/ssl_models/vqw2v_extractor.py` to extract these indexes locally.
 
+To get the `codebook.npy` locally, use:
+```python
+from vec2wav2.ssl_models.vqw2v_extractor import Extractor
+import numpy as np
+extractor = Extractor()
+codebook = extractor.get_codebook()
+np.save("feats/vqidx/codebook.npy", codebook)
+```
+
+
 * **Mel spectrograms (FBanks)**. As they are too large, we provide a script to extract them locally:
   ```bash
   nj=64  # parallel jobs. Set this according to your CPU cores.
