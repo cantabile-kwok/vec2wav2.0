@@ -9,6 +9,10 @@
 > [!IMPORTANT] 
 > Pretrained model (with vq-wav2vec as input) and training procedure are released!
 
+* Comparison of our model and various famous VC models:
+
+<img src="comparison.png" alt="drawing" width="600"/>
+
 ## Environment
 
 Please refer to `environment` directory for a `requirements.txt` and `Dockerfile`.
